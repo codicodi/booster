@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -94,20 +93,7 @@ var autodiscoveryGptTypes = map[string]string{
 	//"itanium": "993d8d3d-f80e-4225-855a-9daf8ed7ea97",
 }
 
-func parseDeviceRef(name, param string, enableAutodetect bool) (*deviceRef, error) {
-	if param == "" {
-		// try to auto-discover gpt partition https://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/
-		if autodiscoveryGUID, ok := autodiscoveryGptTypes[runtime.GOARCH]; enableAutodetect && ok {
-			debug("%s= param is not specified. Use GPT partition autodiscovery with guid type %s", name, autodiscoveryGUID)
-			gptType, err := parseUUID(autodiscoveryGUID)
-			if err != nil {
-				return nil, err
-			}
-			return &deviceRef{refGptType, gptType}, nil
-		}
-		return nil, fmt.Errorf("%s= boot option is not specified", name)
-	}
-
+func parseDeviceRef(param string) (*deviceRef, error) {
 	if strings.HasPrefix(param, "UUID=") {
 		uuid := strings.TrimPrefix(param, "UUID=")
 
@@ -179,5 +165,5 @@ func parseDeviceRef(name, param string, enableAutodetect bool) (*deviceRef, erro
 		return &deviceRef{refPath, param}, nil
 	}
 
-	return nil, fmt.Errorf("unable to parse %s= parameter '%s'", name, param)
+	return nil, fmt.Errorf("unable to parse parameter")
 }
